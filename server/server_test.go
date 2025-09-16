@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"link/auth"
-	"link/messages"
+	"github.com/sethfduke/link/auth"
+	"github.com/sethfduke/link/messages"
 
 	"github.com/gorilla/websocket"
 )
@@ -369,10 +369,10 @@ func TestRateLimiting(t *testing.T) {
 func TestBroadcast(t *testing.T) {
 	t.Run("broadcast function exists", func(t *testing.T) {
 		srv := NewLinkServer()
-		
+
 		// Test that broadcast doesn't panic with no clients
 		srv.Broadcast("test", "1.0", map[string]string{"hello": "world"})
-		
+
 		// This test mainly verifies the function exists and handles empty client list
 		if len(srv.clients) != 0 {
 			t.Errorf("expected no clients, got %d", len(srv.clients))
@@ -441,7 +441,7 @@ func TestMessagingContext(t *testing.T) {
 	t.Run("messaging context send options", func(t *testing.T) {
 		// Test send options
 		opts := &sendOpts{}
-		
+
 		WithFrom("sender")(opts)
 		WithVersion("2.0")(opts)
 		WithCorrelation("test-corr")(opts)
@@ -520,7 +520,7 @@ func TestClientCreation(t *testing.T) {
 		pingHandler := func(string) error { return nil }
 		pongHandler := func(string) error { return nil }
 
-		client := NewClientWithPing("test-client", conn, 64, 
+		client := NewClientWithPing("test-client", conn, 64,
 			30*time.Second, 5*time.Second, pingHandler, pongHandler)
 
 		if client.pingInterval != 30*time.Second {
@@ -582,14 +582,14 @@ func TestConcurrentAccess(t *testing.T) {
 		// Simulate concurrent client additions and removals
 		for i := 0; i < 50; i++ {
 			wg.Add(2)
-			
+
 			go func(id int) {
 				defer wg.Done()
 				clientID := fmt.Sprintf("client-%d", id)
 				// Just test the removal without adding (to avoid type issues)
 				srv.removeClient(clientID)
 			}(i)
-			
+
 			go func(id int) {
 				defer wg.Done()
 				clientID := fmt.Sprintf("client-%d", id+50)
@@ -598,7 +598,7 @@ func TestConcurrentAccess(t *testing.T) {
 		}
 
 		wg.Wait()
-		
+
 		// Test should complete without race conditions
 		// This tests that concurrent removeClient calls don't cause issues
 		if len(srv.clients) != 0 {
@@ -692,7 +692,7 @@ func TestServerMethods(t *testing.T) {
 		srv := NewLinkServer()
 		srv.MessageRegistry = nil
 		srv.ensureRegistry()
-		
+
 		if srv.MessageRegistry == nil {
 			t.Error("expected message registry to be initialized")
 		}
@@ -700,7 +700,7 @@ func TestServerMethods(t *testing.T) {
 
 	t.Run("cleanup rate limiters", func(t *testing.T) {
 		srv := NewLinkServer(WithMessageRateLimit(10))
-		
+
 		// Add some old rate limiters
 		srv.rateMu.Lock()
 		srv.clientRateMap["old-client"] = &rateLimiter{
@@ -728,7 +728,7 @@ func TestServerMethods(t *testing.T) {
 	t.Run("add client with nil map", func(t *testing.T) {
 		srv := NewLinkServer()
 		srv.clients = nil
-		
+
 		conn := &websocket.Conn{} // Mock connection
 		client := NewClient("test-client", conn, 10)
 		srv.addClient("test-client", client)
@@ -810,7 +810,7 @@ func TestOptionsNotCovered(t *testing.T) {
 	t.Run("with logger", func(t *testing.T) {
 		customLogger := &slogLogger{l: slog.Default()}
 		srv := NewLinkServer(WithLogger(customLogger))
-		
+
 		if srv.Log != customLogger {
 			t.Error("expected custom logger to be set")
 		}
@@ -819,7 +819,7 @@ func TestOptionsNotCovered(t *testing.T) {
 	t.Run("with slog", func(t *testing.T) {
 		customSlog := slog.Default()
 		srv := NewLinkServer(WithSlog(customSlog))
-		
+
 		slogLogger, ok := srv.Log.(*slogLogger)
 		if !ok {
 			t.Error("expected slog logger to be set")

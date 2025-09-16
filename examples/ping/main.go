@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"link/messages"
-	"link/server"
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
 	"log"
 	"log/slog"
 	"sync"
@@ -37,18 +37,18 @@ func main() {
 
 	// Run demo clients to demonstrate ping/pong functionality
 	var wg sync.WaitGroup
-	
+
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
 		runDemoClient("Default Ping Server", "ws://localhost:9999/ws", 35*time.Second)
 	}()
-	
+
 	go func() {
 		defer wg.Done()
 		runDemoClient("Custom Interval Server", "ws://localhost:10000/ws", 15*time.Second)
 	}()
-	
+
 	go func() {
 		defer wg.Done()
 		runDemoClient("Custom Handler Server", "ws://localhost:10001/ws", 20*time.Second)
@@ -56,7 +56,7 @@ func main() {
 
 	// Wait for all demo clients to complete
 	wg.Wait()
-	
+
 	fmt.Println("\nPing/pong demonstration completed successfully!")
 	fmt.Println("All servers demonstrated their ping/pong configurations.")
 }
@@ -140,9 +140,9 @@ func startCustomHandlerServer() {
 		server.WithPort(10001),
 		server.WithCompression(true),
 		server.WithLogLevel(int(slog.LevelInfo)),
-		server.WithPing(15*time.Second, 5*time.Second),   // Custom ping timing
-		server.WithPingHandler(customPingHandler),        // Custom ping handler
-		server.WithPongHandler(customPongHandler),        // Custom pong handler
+		server.WithPing(15*time.Second, 5*time.Second), // Custom ping timing
+		server.WithPingHandler(customPingHandler),      // Custom ping handler
+		server.WithPongHandler(customPongHandler),      // Custom pong handler
 	)
 
 	srv.Register(
@@ -164,7 +164,7 @@ func handlePingMessage(ctx context.Context, msg *PingMessage) error {
 // runDemoClient connects to a WebSocket server and demonstrates ping/pong functionality
 func runDemoClient(serverName, wsURL string, duration time.Duration) {
 	fmt.Printf("\n--- Connecting to %s ---\n", serverName)
-	
+
 	// Configure WebSocket dialer
 	dialer := websocket.Dialer{
 		HandshakeTimeout:  5 * time.Second,
@@ -184,7 +184,7 @@ func runDemoClient(serverName, wsURL string, duration time.Duration) {
 		fmt.Printf("[%s CLIENT] 📡 Received PING from server (data: %q)\n", serverName, appData)
 		return nil // Returning nil sends automatic pong response
 	})
-	
+
 	conn.SetPongHandler(func(appData string) error {
 		fmt.Printf("[%s CLIENT] 🏓 Received PONG from server (data: %q)\n", serverName, appData)
 		return nil
@@ -230,7 +230,7 @@ func runDemoClient(serverName, wsURL string, duration time.Duration) {
 		defer close(done)
 		deadline := time.Now().Add(duration)
 		_ = conn.SetReadDeadline(deadline)
-		
+
 		for {
 			_, _, err := conn.ReadMessage()
 			if err != nil {

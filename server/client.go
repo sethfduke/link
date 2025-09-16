@@ -3,9 +3,10 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"link/messages"
 	"sync"
 	"time"
+
+	"github.com/sethfduke/link/messages"
 
 	"github.com/gorilla/websocket"
 )

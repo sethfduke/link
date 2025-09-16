@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"link/messages"
+	"github.com/sethfduke/link/messages"
 	"time"
 
 	"github.com/google/uuid"

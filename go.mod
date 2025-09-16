@@ -1,4 +1,4 @@
-module link
+module github.com/sethfduke/link
 
 go 1.25
 

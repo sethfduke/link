@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"link/messages"
-	"link/server"
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
 	"log"
 	"log/slog"
 	"time"
@@ -21,14 +21,14 @@ type TestMessage struct {
 func main() {
 	// Create a LinkServer with production-ready configuration
 	srv := server.NewLinkServer(
-		server.Host("localhost"),                         // Bind to localhost interface
-		server.WithPort(9999),                            // Listen on port 9999
-		server.WithCompression(true),                     // Enable WebSocket compression
-		server.WithLogLevel(int(slog.LevelInfo)),         // Set logging to Info level
-		server.WithHealthEndpoint("/health"),             // Enable health check endpoint
-		server.WithMaxConnections(100),                   // Limit to 100 concurrent connections
-		server.WithConnectionTimeout(30*time.Second),     // 30 second connection timeout
-		server.WithMessageRateLimit(60),                  // Limit to 60 messages per minute per client
+		server.Host("localhost"),                     // Bind to localhost interface
+		server.WithPort(9999),                        // Listen on port 9999
+		server.WithCompression(true),                 // Enable WebSocket compression
+		server.WithLogLevel(int(slog.LevelInfo)),     // Set logging to Info level
+		server.WithHealthEndpoint("/health"),         // Enable health check endpoint
+		server.WithMaxConnections(100),               // Limit to 100 concurrent connections
+		server.WithConnectionTimeout(30*time.Second), // 30 second connection timeout
+		server.WithMessageRateLimit(60),              // Limit to 60 messages per minute per client
 	)
 
 	// Register message handlers

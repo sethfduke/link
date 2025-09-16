@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"link/messages"
-	"link/server"
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
 	"log"
 	"log/slog"
 )

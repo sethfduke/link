@@ -2,7 +2,7 @@ package messages
 
 import (
 	"context"
-	"link/auth"
+	"github.com/sethfduke/link/auth"
 )
 
 // RegEntry holds the factory function and handler for a registered message type.

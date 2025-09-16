@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"link/messages"
-	"link/server"
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"

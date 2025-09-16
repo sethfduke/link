@@ -2,7 +2,7 @@ package server
 
 import (
 	"crypto/tls"
-	"link/auth"
+	"github.com/sethfduke/link/auth"
 	"log/slog"
 	"net/http"
 	"time"

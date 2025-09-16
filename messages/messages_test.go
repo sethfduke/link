@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"link/auth"
+	"github.com/sethfduke/link/auth"
 )
 
 // Test message types for testing
@@ -493,7 +493,7 @@ func TestJoinedMessage(t *testing.T) {
 func TestAckMessage(t *testing.T) {
 	t.Run("ack message creation and serialization", func(t *testing.T) {
 		ack := Ack{}
-		
+
 		// Test that Ack can be marshaled/unmarshaled
 		data, err := json.Marshal(ack)
 		if err != nil {

@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"link/auth"
-	"link/messages"
-	"link/server"
+	"github.com/sethfduke/link/auth"
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
 	"log"
 	"log/slog"
 	"time"
