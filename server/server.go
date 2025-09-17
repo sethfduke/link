@@ -344,6 +344,25 @@ func (s *LinkServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	go client.writePump()
 
+	if pingInterval > 0 {
+		pongWait := pingTimeout
+		if pongWait <= 0 {
+			pongWait = 5 * time.Second
+		}
+
+		// Calculate proper deadline: time until next ping + pong timeout
+		pongReadDeadline := pingInterval + pongWait
+
+		c.SetPongHandler(func(string) error {
+			// Reset deadline to allow time for next ping cycle plus pong timeout
+			_ = c.SetReadDeadline(time.Now().Add(pongReadDeadline))
+			return nil
+		})
+
+		// Set initial read deadline
+		_ = c.SetReadDeadline(time.Now().Add(pongReadDeadline))
+	}
+
 	joinedMsg := messages.Joined{ID: id}
 	if err := client.Send("joined", "", joinedMsg); err != nil {
 		s.Log.Error("failed to send joined message", "id", id, "err", err)
