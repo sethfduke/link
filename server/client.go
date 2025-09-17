@@ -65,19 +65,7 @@ func (c *Client) Send(msgType, version string, payload any) error {
 // writePump handles sending messages from the send channel to the WebSocket connection.
 // It uses Gorilla WebSocket's built-in ping/pong functionality for connection keep-alive.
 func (c *Client) writePump() {
-	// Configure automatic ping/pong using Gorilla's built-in functionality
 	if c.pingInterval > 0 {
-		pongTimeout := c.pingTimeout
-		if pongTimeout == 0 {
-			pongTimeout = 5 * time.Second
-		}
-
-		// Set up automatic ping/pong handling
-		c.Conn.SetPongHandler(func(string) error {
-			c.Conn.SetReadDeadline(time.Now().Add(pongTimeout))
-			return nil
-		})
-
 		t := time.NewTicker(c.pingInterval)
 		defer t.Stop()
 
@@ -88,12 +76,12 @@ func (c *Client) writePump() {
 					_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 					return
 				}
-				c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+				_ = c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					return
 				}
 			case <-t.C:
-				c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+				_ = c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 				if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 					return
 				}
@@ -106,7 +94,7 @@ func (c *Client) writePump() {
 				_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			_ = c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 			if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 				return
 			}

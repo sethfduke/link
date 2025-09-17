@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"log/slog"
+
 	"github.com/sethfduke/link/messages"
 	"github.com/sethfduke/link/server"
-	"log"
 )
 
 // TestMessage represents a simple message type for the example
@@ -22,9 +24,13 @@ type TestReply struct {
 // This example shows how to create a simple WebSocket server with message handling
 // using the library's default settings for quick prototyping and development.
 func main() {
-	// Create a new LinkServer using the convenient default configuration
-	// This sets up localhost:9999 with compression enabled and Info-level logging
-	srv := server.NewDefaultServer()
+	// Create a new LinkServer
+	srv := server.NewLinkServer(
+		server.Host("localhost"),
+		server.WithPort(9999),
+		server.WithDefaultPing(),
+		server.WithLogLevel(int(slog.LevelDebug)),
+	)
 
 	// Register a message handler for the "test" message type
 	// This demonstrates type-safe message handling with automatic JSON unmarshaling
