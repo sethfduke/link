@@ -320,11 +320,24 @@ func (s *LinkServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	id := uuid.NewString()
-
 	s.Log.Debug("registering client", "id", id)
 
 	pingInterval := s.pingInterval
 	pingTimeout := s.pingTimeout
+
+	// Set up pong handler with configurable timeout
+	if pingInterval > 0 {
+		pongWait := pingTimeout
+		if pongWait <= 0 {
+			pongWait = 90 * time.Second // sensible default as you suggested
+		}
+
+		// Install pong handler so control PONGs keep the connection alive
+		_ = c.SetReadDeadline(time.Now().Add(pongWait))
+		c.SetPongHandler(func(appData string) error {
+			return c.SetReadDeadline(time.Now().Add(pongWait))
+		})
+	}
 
 	client := NewClientWithPing(id, c, 128, pingInterval, pingTimeout)
 	s.addClient(id, client)
@@ -348,15 +361,7 @@ func (s *LinkServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 		ctx = WithToken(ctx, rawToken)
 	}
 
-	if s.connectionTimeout > 0 {
-		_ = c.SetReadDeadline(time.Now().Add(s.connectionTimeout))
-	}
-
 	for {
-		if s.connectionTimeout > 0 {
-			_ = c.SetReadDeadline(time.Now().Add(s.connectionTimeout))
-		}
-
 		mt, data, err := c.ReadMessage()
 		if err != nil {
 			if !isNormalDisconnect(err) {
