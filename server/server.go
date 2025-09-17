@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sethfduke/link/auth"
-	"github.com/sethfduke/link/messages"
 	"io"
 	"log/slog"
 	"net"
@@ -18,6 +16,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/sethfduke/link/auth"
+	"github.com/sethfduke/link/messages"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -196,7 +197,7 @@ func (s *LinkServer) Serve() error {
 
 // setupLogging configures the server's logging system with the specified log level.
 func (s *LinkServer) setupLogging(level int) {
-	h := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(uint8(level))})
+	h := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.Level(level)})
 	l := slog.New(h)
 	slog.SetDefault(l)
 	if _, ok := s.Log.(*slogLogger); ok {
