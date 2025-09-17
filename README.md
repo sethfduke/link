@@ -25,7 +25,7 @@ Link is a Go library that provides a powerful, type-safe WebSocket server for ha
 - **TLS/HTTPS Support** - Secure WebSocket connections with auto-generated or custom certificates
 - **Health endpoints** - HTTP health check endpoints for load balancer integration
 - **Connection management** - Configurable connection limits, timeouts, and rate limiting
-- **Ping/Pong functionality** - Configurable keep-alive with custom handlers
+- **Ping/Pong functionality** - Standard WebSocket control frame ping/pong with configurable intervals
 - **WebSocket compression** - Optional compression support for bandwidth optimization
 - **Graceful error handling** - Proper error messages and connection cleanup
 
@@ -248,13 +248,13 @@ srv := server.NewLinkServer(
 
 ## Ping/Pong Keep-Alive
 
-Link supports configurable ping/pong functionality to maintain WebSocket connections.
+Link uses standard WebSocket control frame ping/pong functionality to maintain connections and detect disconnected clients. This leverages the built-in ping/pong support from the Gorilla WebSocket library.
 
 ### Default Ping Configuration
 
 ```go
 srv := server.NewLinkServer(
-    server.WithDefaultPing(), // 30s interval, 5s timeout
+    server.WithDefaultPing(), // 30s ping interval, 5s pong timeout
 )
 ```
 
@@ -262,29 +262,16 @@ srv := server.NewLinkServer(
 
 ```go
 srv := server.NewLinkServer(
-    server.WithPing(10*time.Second, 3*time.Second), // Custom intervals
+    server.WithPing(10*time.Second, 3*time.Second), // Custom ping interval and pong timeout
 )
 ```
 
-### Custom Ping/Pong Handlers
+### How It Works
 
-```go
-pingHandler := func(appData string) error {
-    fmt.Printf("Received ping: %s\n", appData)
-    return nil // Return nil to send automatic pong response
-}
-
-pongHandler := func(appData string) error {
-    fmt.Printf("Received pong: %s\n", appData)
-    return nil
-}
-
-srv := server.NewLinkServer(
-    server.WithPing(15*time.Second, 5*time.Second),
-    server.WithPingHandler(pingHandler),
-    server.WithPongHandler(pongHandler),
-)
-```
+- The server automatically sends WebSocket ping control frames at the configured interval
+- Clients automatically respond with pong control frames (handled by the WebSocket library)
+- If a pong response isn't received within the timeout period, the connection is considered dead
+- This provides reliable connection health monitoring without custom application-level logic
 
 ## Message Format
 
