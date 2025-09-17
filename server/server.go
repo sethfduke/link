@@ -69,8 +69,6 @@ type LinkServer struct {
 
 	pingInterval time.Duration
 	pingTimeout  time.Duration
-	pingHandler  func(appData string) error
-	pongHandler  func(appData string) error
 
 	healthEndpoint string
 
@@ -327,7 +325,7 @@ func (s *LinkServer) wsHandler(w http.ResponseWriter, r *http.Request) {
 	pingInterval := s.pingInterval
 	pingTimeout := s.pingTimeout
 
-	client := NewClientWithPing(id, c, 128, pingInterval, pingTimeout, s.pingHandler, s.pongHandler)
+	client := NewClientWithPing(id, c, 128, pingInterval, pingTimeout)
 	s.addClient(id, client)
 
 	go client.writePump()

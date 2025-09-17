@@ -186,21 +186,6 @@ func TestServerOptions(t *testing.T) {
 		}
 	})
 
-	t.Run("with ping handlers", func(t *testing.T) {
-		pingHandler := func(string) error { return nil }
-		pongHandler := func(string) error { return nil }
-		srv := NewLinkServer(
-			WithPingHandler(pingHandler),
-			WithPongHandler(pongHandler),
-		)
-
-		if srv.pingHandler == nil {
-			t.Error("expected ping handler to be set")
-		}
-		if srv.pongHandler == nil {
-			t.Error("expected pong handler to be set")
-		}
-	})
 
 	t.Run("with health endpoint", func(t *testing.T) {
 		srv := NewLinkServer(WithHealthEndpoint("/health"))
@@ -517,11 +502,9 @@ func TestClientCreation(t *testing.T) {
 
 	t.Run("new client with ping", func(t *testing.T) {
 		conn := &websocket.Conn{}
-		pingHandler := func(string) error { return nil }
-		pongHandler := func(string) error { return nil }
 
 		client := NewClientWithPing("test-client", conn, 64,
-			30*time.Second, 5*time.Second, pingHandler, pongHandler)
+			30*time.Second, 5*time.Second)
 
 		if client.pingInterval != 30*time.Second {
 			t.Errorf("expected ping interval 30s, got %v", client.pingInterval)

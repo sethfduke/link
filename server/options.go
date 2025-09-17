@@ -112,21 +112,6 @@ func WithPing(interval, timeout time.Duration) Option {
 	}
 }
 
-// WithPingHandler sets a custom ping handler that will be called when ping messages are received.
-// The handler receives the ping message data and can return an error to close the connection.
-func WithPingHandler(handler func(appData string) error) Option {
-	return func(s *LinkServer) {
-		s.pingHandler = handler
-	}
-}
-
-// WithPongHandler sets a custom pong handler that will be called when pong messages are received.
-// The handler receives the pong message data and can return an error to close the connection.
-func WithPongHandler(handler func(appData string) error) Option {
-	return func(s *LinkServer) {
-		s.pongHandler = handler
-	}
-}
 
 // WithHealthEndpoint enables a health check endpoint at the specified path.
 // The endpoint returns a 200 OK response with basic server status information.

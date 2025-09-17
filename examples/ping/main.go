@@ -4,32 +4,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sethfduke/link/messages"
-	"github.com/sethfduke/link/server"
 	"log"
 	"log/slog"
 	"sync"
 	"time"
 
+	"github.com/sethfduke/link/messages"
+	"github.com/sethfduke/link/server"
+
 	"github.com/gorilla/websocket"
 )
 
-// PingMessage represents a simple message type for the example
-type PingMessage struct {
+// EchoPingMessage represents a simple message type for the example
+type EchoPingMessage struct {
 	Message string `json:"message"`
 }
 
 // main demonstrates the ping/pong functionality of LinkServer with different configurations.
-// This example shows how to configure default ping behavior, custom intervals, and custom handlers.
+// This example shows how to configure default ping behavior and custom intervals using standard WebSocket ping/pong.
 func main() {
 	fmt.Println("Starting LinkServer ping/pong example...")
-	fmt.Println("This example demonstrates three different ping configurations:")
+	fmt.Println("This example demonstrates two different ping configurations using standard WebSocket control frames:")
 	fmt.Println("")
 
-	// Start three different servers with different ping configurations
+	// Start two different servers with different ping configurations
 	go startDefaultPingServer()
 	go startCustomIntervalServer()
-	go startCustomHandlerServer()
 
 	// Give servers time to start
 	fmt.Println("Waiting for servers to start...")
@@ -38,7 +38,7 @@ func main() {
 	// Run demo clients to demonstrate ping/pong functionality
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		runDemoClient("Default Ping Server", "ws://localhost:9999/ws", 35*time.Second)
@@ -49,23 +49,19 @@ func main() {
 		runDemoClient("Custom Interval Server", "ws://localhost:10000/ws", 15*time.Second)
 	}()
 
-	go func() {
-		defer wg.Done()
-		runDemoClient("Custom Handler Server", "ws://localhost:10001/ws", 20*time.Second)
-	}()
-
 	// Wait for all demo clients to complete
 	wg.Wait()
 
 	fmt.Println("\nPing/pong demonstration completed successfully!")
-	fmt.Println("All servers demonstrated their ping/pong configurations.")
+	fmt.Println("Both servers demonstrated standard WebSocket ping/pong functionality.")
 }
 
-// startDefaultPingServer demonstrates the default ping behavior
+// startDefaultPingServer demonstrates the default ping behavior using standard WebSocket control frames
 func startDefaultPingServer() {
 	fmt.Println("1. Default Ping Server (localhost:9999)")
 	fmt.Println("   - Uses default ping interval (30 seconds)")
 	fmt.Println("   - Uses default ping timeout (5 seconds)")
+	fmt.Println("   - Uses standard WebSocket control ping/pong frames")
 	fmt.Println("   - Connect to: ws://localhost:9999/ws")
 	fmt.Println("")
 
@@ -78,7 +74,7 @@ func startDefaultPingServer() {
 	)
 
 	srv.Register(
-		messages.Message[PingMessage]("ping", handlePingMessage),
+		messages.Message[EchoPingMessage]("echo", handlePingMessage),
 	)
 
 	if err := srv.Serve(); err != nil {
@@ -86,13 +82,14 @@ func startDefaultPingServer() {
 	}
 }
 
-// startCustomIntervalServer demonstrates custom ping intervals
+// startCustomIntervalServer demonstrates custom ping intervals using standard WebSocket control frames
 func startCustomIntervalServer() {
 	time.Sleep(100 * time.Millisecond) // Stagger startup
 
 	fmt.Println("2. Custom Interval Server (localhost:10000)")
 	fmt.Println("   - Uses custom ping interval (10 seconds)")
 	fmt.Println("   - Uses custom ping timeout (3 seconds)")
+	fmt.Println("   - Uses standard WebSocket control ping/pong frames")
 	fmt.Println("   - Connect to: ws://localhost:10000/ws")
 	fmt.Println("")
 
@@ -105,7 +102,7 @@ func startCustomIntervalServer() {
 	)
 
 	srv.Register(
-		messages.Message[PingMessage]("ping", handlePingMessage),
+		messages.Message[EchoPingMessage]("echo", handlePingMessage),
 	)
 
 	if err := srv.Serve(); err != nil {
@@ -113,51 +110,10 @@ func startCustomIntervalServer() {
 	}
 }
 
-// startCustomHandlerServer demonstrates custom ping/pong handlers
-func startCustomHandlerServer() {
-	time.Sleep(200 * time.Millisecond) // Stagger startup
-
-	fmt.Println("3. Custom Handler Server (localhost:10001)")
-	fmt.Println("   - Uses custom ping/pong handlers with logging")
-	fmt.Println("   - Uses 15 second ping interval")
-	fmt.Println("   - Connect to: ws://localhost:10001/ws")
-	fmt.Println("")
-
-	// Define custom ping handler
-	customPingHandler := func(appData string) error {
-		fmt.Printf("[CUSTOM PING HANDLER] Received ping with data: %q\n", appData)
-		return nil // Return nil to send automatic pong response
-	}
-
-	// Define custom pong handler
-	customPongHandler := func(appData string) error {
-		fmt.Printf("[CUSTOM PONG HANDLER] Received pong with data: %q\n", appData)
-		return nil
-	}
-
-	srv := server.NewLinkServer(
-		server.Host("localhost"),
-		server.WithPort(10001),
-		server.WithCompression(true),
-		server.WithLogLevel(int(slog.LevelInfo)),
-		server.WithPing(15*time.Second, 5*time.Second), // Custom ping timing
-		server.WithPingHandler(customPingHandler),      // Custom ping handler
-		server.WithPongHandler(customPongHandler),      // Custom pong handler
-	)
-
-	srv.Register(
-		messages.Message[PingMessage]("ping", handlePingMessage),
-	)
-
-	if err := srv.Serve(); err != nil {
-		log.Printf("Custom handler server failed: %v", err)
-	}
-}
-
 // handlePingMessage processes incoming ping messages
-func handlePingMessage(ctx context.Context, msg *PingMessage) error {
+func handlePingMessage(ctx context.Context, msg *EchoPingMessage) error {
 	clientID, _ := server.ClientIDFrom(ctx)
-	fmt.Printf("Received ping message from client %s: %s\n", clientID, msg.Message)
+	fmt.Printf("Received echo message from client %s: %s\n", clientID, msg.Message)
 	return nil
 }
 
@@ -213,8 +169,8 @@ func runDemoClient(serverName, wsURL string, duration time.Duration) {
 
 	// Send a test message to the server
 	testEnvelope := messages.Envelope{
-		Type: "ping",
-		Data: mustJSON(PingMessage{Message: fmt.Sprintf("Hello from %s demo client!", serverName)}),
+		Type: "echo",
+		Data: mustJSON(EchoPingMessage{Message: fmt.Sprintf("Hello from %s demo client!", serverName)}),
 	}
 
 	if err := conn.WriteJSON(testEnvelope); err != nil {
